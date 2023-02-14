@@ -3,7 +3,32 @@ import time
 
 print("Start a big query client to use these functions")
 
-def read_bq_table(client,table_id):
+def read_full_bq_table(client,table_id):
+    """
+    Gets data from BigQuery and saves to Pandas DataFrame
+
+    Args:
+       table_id (str): the table id to determine what table to return 
+       e.g "ons-fintrans-analysis-prod.fin_wip_notebook.harry_test"
+    Returns:
+       the query results in a Pandas dataframe , or None if error
+    """
+    
+    sql = "SELECT * FROM " + table_id 
+    start = time.time()   
+    try:
+        # client = bigquery.Client()
+        df = client.query(sql).to_dataframe()
+        # View table properties
+        print("Table has {} dimensions".format(df.shape))
+        end = time.time()
+        print(f"Table took {round(end - start)} seconds to load")
+        return df
+    except Exception as e:
+        print(f"Error getting data {e}")
+        return None
+    
+def read_bq_table_sql(client,sql):
     """
     Gets data from BigQuery and saves to Pandas DataFrame
 
@@ -13,8 +38,6 @@ def read_bq_table(client,table_id):
     Returns:
        the query results in a Pandas dataframe , or None if error
     """
-    
-    sql = "SELECT * FROM " + table_id 
     start = time.time()   
     try:
         # client = bigquery.Client()
