@@ -1,4 +1,4 @@
-import bq_utils as bq
+from fintrans_toolbox.src.utils import bq_utils as bq
 
 
 def read_spend_merchant_location(
