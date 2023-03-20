@@ -159,7 +159,7 @@ def read_spend_origin_and_channel(
         cardholder_origin LIKE '{cardholder_origin}%' AND\
         cardholder_origin_country LIKE '{cardholder_origin_country}%' AND\
         mcg LIKE '{mcg}%' AND\
-        mcc LIKE '{mcc}' AND\
+        mcc LIKE '{mcc}%' AND\
         merchant_channel LIKE '{merchant_channel}%'"
 
     SQL4 = " ORDER BY time_period, time_period_value"
@@ -247,7 +247,7 @@ def read_retail_performance_high_streets_towns(
         CAST(SUBSTRING(time_period_value,5,6)AS int), 01,00,00,00) AS\
         date_time, "
     else:
-        SQL_date = " "
+        SQL_date = ""
 
     SQL1 = f"\
     SELECT {SQL_date} * FROM\
@@ -444,7 +444,7 @@ def create_index(df, value, categorical_vars):
     """
     try:
         df_t0 = df[df["date_time"] == min(df["date_time"])]
-        print(f"{value} in {min(df['date_time'])} used as base for index")
+        print(f"{value} in {min(df['date_time'])} used as base for {value} index")
     except Exception as e:
         print(
             f"\
@@ -453,7 +453,9 @@ def create_index(df, value, categorical_vars):
         )
         df = df.sort_values("time_period_value")
         df_t0 = df[df["time_period_value"] == min(df["time_period_value"])]
-        print(f"{value} in {min(df['time_period_value'])} used as base for index")
+        print(
+            f"{value} in {min(df['time_period_value'])} used as base for {value} index"
+        )
 
     df_t0 = df_t0[categorical_vars + [value]]
     df_t0 = df_t0.rename(columns={f"{value}": f"{value}_t0"})
