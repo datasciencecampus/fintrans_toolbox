@@ -1,4 +1,6 @@
 from fintrans_toolbox.src.utils import bq_utils as bq
+import pandas as pd
+import numpy as np
 
 
 def read_spend_merchant_location(
@@ -50,8 +52,20 @@ def read_spend_merchant_location(
     else:
         SQL3 = ""
 
+    if time_period == "Quarter":
+        SQL_date = "DATETIME( CAST(SUBSTRING(time_period_value, 1,4) AS int),\
+        CAST(SUBSTRING(time_period_value,6,6)AS int)*3, 01,00,00,00) AS\
+        date_time, "
+    elif time_period == "Month":
+        SQL_date = "DATETIME( CAST(SUBSTRING(time_period_value, 1,4) AS int),\
+        CAST(SUBSTRING(time_period_value,5,6)AS int), 01,00,00,00) AS\
+        date_time, "
+    else:
+        SQL_date = " "
+
     SQL1 = f"\
-        SELECT * FROM ons-fintrans-data-prod.fintrans_visa.spend_merchant_location\
+        SELECT {SQL_date} * FROM\
+        ons-fintrans-data-prod.fintrans_visa.spend_merchant_location\
         WHERE\
         time_period LIKE '{time_period}%' AND\
         cardholder_issuing_level LIKE '{cardholder_issuing_level}%' AND\
@@ -126,8 +140,20 @@ def read_spend_origin_and_channel(
     else:
         SQL3 = ""
 
+    if time_period == "Quarter":
+        SQL_date = "DATETIME( CAST(SUBSTRING(time_period_value, 1,4) AS int),\
+        CAST(SUBSTRING(time_period_value,6,6)AS int)*3, 01,00,00,00) AS\
+        date_time, "
+    elif time_period == "Month":
+        SQL_date = "DATETIME( CAST(SUBSTRING(time_period_value, 1,4) AS int),\
+        CAST(SUBSTRING(time_period_value,5,6)AS int), 01,00,00,00) AS\
+        date_time, "
+    else:
+        SQL_date = " "
+
     SQL1 = f"\
-        SELECT * FROM ons-fintrans-data-prod.fintrans_visa.spend_origin_and_channel\
+        SELECT {SQL_date} * FROM\
+        ons-fintrans-data-prod.fintrans_visa.spend_origin_and_channel\
         WHERE\
         time_period LIKE '{time_period}%' AND\
         cardholder_origin LIKE '{cardholder_origin}%' AND\
@@ -212,8 +238,19 @@ def read_retail_performance_high_streets_towns(
     else:
         SQL3 = ""
 
+    if time_period == "Quarter":
+        SQL_date = "DATETIME( CAST(SUBSTRING(time_period_value, 1,4) AS int),\
+        CAST(SUBSTRING(time_period_value,6,6)AS int)*3, 01,00,00,00) AS\
+        date_time, "
+    elif time_period == "Month":
+        SQL_date = "DATETIME( CAST(SUBSTRING(time_period_value, 1,4) AS int),\
+        CAST(SUBSTRING(time_period_value,5,6)AS int), 01,00,00,00) AS\
+        date_time, "
+    else:
+        SQL_date = " "
+
     SQL1 = f"\
-    SELECT * FROM\
+    SELECT {SQL_date} * FROM\
     ons-fintrans-data-prod.fintrans_visa.retail_performance_high_streets_towns\
     WHERE\
     time_period LIKE '{time_period}%' AND\
@@ -228,5 +265,201 @@ def read_retail_performance_high_streets_towns(
     print(f"The SQL statement you have just selected is: {SQL}")
 
     df = bq.read_bq_table_sql(client, SQL)
+
+    return df
+
+
+def create_date_time(df):
+    """
+    Description:
+    - creates date time column in pandas dataframe. irrespective of month/quarter
+
+    Args:
+    - df: pandas dataframe
+
+    Returns:
+    - df with year, month, date_time column
+    """
+
+    df["year"] = df["time_period_value"].str[:4].astype(int)
+
+    df["month"] = np.where(
+        df["time_period_value"].str[4:5] == "Q",
+        3 * df["time_period_value"].str[5:6].astype(int),
+        df["time_period_value"].str[4:6].astype(int),
+    )
+
+    df["date_time"] = pd.to_datetime(df["year"] * 100 + df["month"], format="%Y%m")
+
+    return df
+
+
+def lag(x):
+    """
+    Description:
+    - Translates yoy/yo2y/yo3y specification into units
+    based on the quarterly data
+
+    Args:
+    - yoy: "yoy" or "yo2y" or "yo3y"
+    e.g. x = lag('yoy'). To use it for monthly data, x = 3 * lag('yoy').
+    Case insensitive.
+
+    Returns:
+    - number of units to shift data back to obtain lag
+    """
+    return {
+        "yoy": 4,
+        "YoY": 4,
+        "yo2y": 8,
+        "Yo2Y": 8,
+        "yo3y": 12,
+        "Yo3Y": 12,
+        "MoM": 1,
+        "mom": 1,
+        "QoQ": 1,
+        "qoq": 1,
+    }[x]
+
+
+def get_cat_vars(table):
+    """
+    Description:
+    - retrieves the categorical variables for each dataset based
+
+    Args:
+    - table: abbreviation or full name of table that you want the
+    categorical variables of e.g. 'sml' or 'spend_merchant_location'
+
+    Returns:
+    - list of column names
+    """
+    return {
+        "spoc": [
+            "cardholder_origin",
+            "cardholder_origin_country",
+            "cardholder_location",
+            "mcg",
+            "mcc",
+            "merchant_channel",
+        ],
+        "sml": [
+            "merchant_location_level",
+            "merchant_location",
+            "cardholder_issuing_level",
+            "cardholder_issuing_country",
+            "mcg",
+            "mcc",
+        ],
+        "rphst": [
+            "cardholder_location_level",
+            "cardholder_location",
+            "merchant_location_level",
+            "merchant_location",
+            "mcg",
+        ],
+        "spend_origin_and_channel": [
+            "cardholder_origin",
+            "cardholder_origin_country",
+            "cardholder_location",
+            "mcg",
+            "mcc",
+            "merchant_channel",
+        ],
+        "spend_merchant_location": [
+            "merchant_location_level",
+            "merchant_location",
+            "cardholder_issuing_level",
+            "cardholder_issuing_country",
+            "mcg",
+            "mcc",
+        ],
+        "retail_performance_high_streets_towns": [
+            "cardholder_location_level",
+            "cardholder_location",
+            "merchant_location_level",
+            "merchant_location",
+            "mcg",
+        ],
+    }[table]
+
+
+def create_XoX_growth(df, time_period, yoy, table, value="spend"):
+    """
+    Description:
+    - creates yoy/yo2y/yo3y/MoM/QoQ growth column
+
+    Args:
+    - df: Pandas dataframe
+    - time_period: 'Month' or 'Quarter'
+    - yoy: "yoy" or "yo2y" or "yo3y" or "MoM" or "QoQ"
+    e.g. x = lag('yoy'). To use it for monthly data, lag = 3 * lag('yoy'). It has
+    been designed to be case insensitive.
+    #- categorical_vars: list of the categorical variables in the dataset. E.g.
+    #if working with all of spend_merchant_location then categorical_vars =
+    #['merchant_location_level','merchant_location','cardholder_issuing_level',
+    #'cardholder_issuing_country','mcg','mcc']. You can reduce this or change this
+    #if you do not have them in your dataframe. Changed to table
+    - table: name/abbreviation of table e.g. 'sml'. Used as input into function
+    to retrieve the categorical variables for a groupby.
+    - value: str of variable you want to calculate growth of. Defaults to 'spend'.
+
+    Returns:
+    - df with lagged yoy column and yoy growth column
+
+    Example: df = create_XoX_growth(df, 'Month', 'MoM','sml', 'spend')
+    """
+    if (time_period == "Month") & ~(yoy in (["MoM", "mom", "QoQ", "qoq"])):
+        x = 3 * (lag(yoy))
+    else:
+        x = lag((yoy))
+    try:
+        df = df.sort_values("date_time")
+    except Exception as e:
+        print(f"no {e} column, sorting by time_period_value instead")
+        df = df.sort_values("time_period_value")
+
+    df[f"{value}_{yoy}_lag"] = df.groupby(get_cat_vars(table))[value].shift(x)
+
+    df[f"{value}_{yoy}"] = (
+        100 * (df[f"{value}"] - df[f"{value}_{yoy}_lag"]) / df[f"{value}_{yoy}_lag"]
+    )
+
+    return df
+
+
+def create_index(df, value, categorical_vars):
+    """
+    Description:
+    - Creates an indexed value from the earliest date in the data
+
+    Args:
+    - df: pandas dataframe
+    - value: column that we want to index e.g. 'spend'
+    - categorical_vars: the categorical variables that you want to group over
+
+    Returns:
+    - df with t0 for specified categorical variables and indexed value
+
+    """
+    try:
+        df_t0 = df[df["date_time"] == min(df["date_time"])]
+        print(f"{value} in {min(df['date_time'])} used as base for index")
+    except Exception as e:
+        print(
+            f"\
+        No {e} column, using 'time_period_value' instead. Consider\
+        converting to date_time"
+        )
+        df = df.sort_values("time_period_value")
+        df_t0 = df[df["time_period_value"] == min(df["time_period_value"])]
+        print(f"{value} in {min(df['time_period_value'])} used as base for index")
+
+    df_t0 = df_t0[categorical_vars + [value]]
+    df_t0 = df_t0.rename(columns={f"{value}": f"{value}_t0"})
+
+    df = pd.merge(df, df_t0, on=categorical_vars, how="outer")
+
+    df[f"{value}_index"] = 100 * (df[f"{value}"] / df[f"{value}_t0"])
 
     return df
