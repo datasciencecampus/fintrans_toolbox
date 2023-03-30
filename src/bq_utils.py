@@ -3,19 +3,20 @@ import time
 
 print("Start a big query client to use these functions")
 
-def read_full_bq_table(client,table_id):
+
+def read_full_bq_table(client, table_id):
     """
     Gets data from BigQuery and saves to Pandas DataFrame
 
     Args:
-       table_id (str): the table id to determine what table to return 
+       table_id (str): the table id to determine what table to return
        e.g "ons-fintrans-analysis-prod.fin_wip_notebook.harry_test"
     Returns:
        the query results in a Pandas dataframe , or None if error
     """
-    
-    sql = "SELECT * FROM " + table_id 
-    start = time.time()   
+
+    sql = "SELECT * FROM " + table_id
+    start = time.time()
     try:
         # client = bigquery.Client()
         df = client.query(sql).to_dataframe()
@@ -27,18 +28,19 @@ def read_full_bq_table(client,table_id):
     except Exception as e:
         print(f"Error getting data {e}")
         return None
-    
-def read_bq_table_sql(client,sql):
+
+
+def read_bq_table_sql(client, sql):
     """
     Gets data from BigQuery and saves to Pandas DataFrame
 
     Args:
-       sql (str): the sql query to determine what data to return 
+       sql (str): the sql query to determine what data to return
        e.g "SELECT * FROM ons-fintrans-analysis-prod.fin_wip_notebook.harry_test"
     Returns:
        the query results in a Pandas dataframe , or None if error
     """
-    start = time.time()   
+    start = time.time()
     try:
         # client = bigquery.Client()
         df = client.query(sql).to_dataframe()

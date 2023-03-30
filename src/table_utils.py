@@ -110,7 +110,8 @@ def read_spend_origin_and_channel(
     - client: defined earlier in the session
     - time_period: 'Month' or 'Quarter'. Defaults to 'All'
     - cardholder_origin: string. Defaults to 'All'
-    - cardholder_origin_country: string. Defaults to 'All'
+    - cardholder_origin_country: string. Defaults to 'All'. If not 'All', it changes
+    cardholder origin to be "".
     - mcg: string. Defaults to 'All'
     - mcc: boolean. Defaults to True. If False it will gather all mccs
     under the MCG specified.
@@ -134,6 +135,9 @@ def read_spend_origin_and_channel(
         cardholder_origin_country = ""
     else:
         SQL2 = ""
+
+    if cardholder_origin_country != "All":
+        cardholder_origin = ""
 
     if destination_country != "":
         SQL3 = f" AND destination_country IN ({destination_country})"
@@ -388,7 +392,13 @@ def get_cat_vars(table):
     }[table]
 
 
-def create_XoX_growth(df, time_period, yoy, categorical_vars, value="spend"):
+def create_XoX_growth(
+    df,
+    time_period,
+    yoy,
+    categorical_vars,
+    value="spend",
+):
     """
     Description:
     - creates yoy/yo2y/yo3y/MoM/QoQ growth column
@@ -417,7 +427,7 @@ def create_XoX_growth(df, time_period, yoy, categorical_vars, value="spend"):
     if (time_period == "Month") & ~(yoy in (["MoM", "mom", "QoQ", "qoq"])):
         x = 3 * (lag(yoy))
     else:
-        x = lag((yoy))
+        x = lag(yoy)
     try:
         df = df.sort_values("date_time")
     except Exception as e:
@@ -488,5 +498,28 @@ def create_index(df, value, categorical_vars, index_value="t0"):
     df = pd.merge(df, df_t0, on=categorical_vars, how="outer")
 
     df[f"{value}_index"] = 100 * (df[f"{value}"] / df[f"{value}_t0"])
+
+    return df
+
+
+def create_t1_t2_growth(df, value, categorical_vars, index_value):
+
+    """
+    Description:
+    - Creates an indexed value from the specified date,
+    then calculates a growth rate by doing index minus 100.
+
+    Args:
+    - df: pandas dataframe
+    - value: column that we want to index e.g. 'spend'
+    - categorical_vars: the categorical variables that you want to group over
+    - index_value: period you want as the base for the index + growth rate.
+
+    Returns:
+    - df with t0 for specified categorical variables and indexed value
+    """
+
+    df = create_index(df, value, categorical_vars, index_value)
+    df[f"growth_from_{index_value}"] = df[f"{value}_index"] - 100
 
     return df
