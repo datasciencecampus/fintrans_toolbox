@@ -291,6 +291,10 @@ def create_date_time(df):
 
     df["date_time"] = pd.to_datetime(df["year"] * 100 + df["month"], format="%Y%m")
 
+    # move date time to the front
+    first_col = df.pop("date_time")
+    df.insert(0, "date_time", first_col)
+
     return df
 
 
@@ -384,7 +388,7 @@ def get_cat_vars(table):
     }[table]
 
 
-def create_XoX_growth(df, time_period, yoy, table, value="spend"):
+def create_XoX_growth(df, time_period, yoy, categorical_vars, value="spend"):
     """
     Description:
     - creates yoy/yo2y/yo3y/MoM/QoQ growth column
@@ -395,19 +399,20 @@ def create_XoX_growth(df, time_period, yoy, table, value="spend"):
     - yoy: "yoy" or "yo2y" or "yo3y" or "MoM" or "QoQ"
     e.g. x = lag('yoy'). To use it for monthly data, lag = 3 * lag('yoy'). It has
     been designed to be case insensitive.
-    #- categorical_vars: list of the categorical variables in the dataset. E.g.
-    #if working with all of spend_merchant_location then categorical_vars =
-    #['merchant_location_level','merchant_location','cardholder_issuing_level',
-    #'cardholder_issuing_country','mcg','mcc']. You can reduce this or change this
-    #if you do not have them in your dataframe. Changed to table
-    - table: name/abbreviation of table e.g. 'sml'. Used as input into function
-    to retrieve the categorical variables for a groupby.
+    - categorical_vars: list of the categorical variables in the dataset. E.g.
+    if working with all of spend_merchant_location then categorical_vars =
+    ['merchant_location_level','merchant_location','cardholder_issuing_level',
+    'cardholder_issuing_country','mcg','mcc']. You can reduce this or change this
+    if you do not have them in your dataframe.
+    #- table: name/abbreviation of table e.g. 'sml'. Used as input into
+    #function ## no longer used
+    #to retrieve the categorical variables for a groupby. ## no longer used
     - value: str of variable you want to calculate growth of. Defaults to 'spend'.
 
     Returns:
     - df with lagged yoy column and yoy growth column
 
-    Example: df = create_XoX_growth(df, 'Month', 'MoM','sml', 'spend')
+    Example: df = create_XoX_growth(df, 'Month', 'MoM',get_car_vars('sml'), 'spend')
     """
     if (time_period == "Month") & ~(yoy in (["MoM", "mom", "QoQ", "qoq"])):
         x = 3 * (lag(yoy))
@@ -419,7 +424,7 @@ def create_XoX_growth(df, time_period, yoy, table, value="spend"):
         print(f"no {e} column, sorting by time_period_value instead")
         df = df.sort_values("time_period_value")
 
-    df[f"{value}_{yoy}_lag"] = df.groupby(get_cat_vars(table))[value].shift(x)
+    df[f"{value}_{yoy}_lag"] = df.groupby(categorical_vars)[value].shift(x)
 
     df[f"{value}_{yoy}"] = (
         100 * (df[f"{value}"] - df[f"{value}_{yoy}_lag"]) / df[f"{value}_{yoy}_lag"]
@@ -428,7 +433,7 @@ def create_XoX_growth(df, time_period, yoy, table, value="spend"):
     return df
 
 
-def create_index(df, value, categorical_vars):
+def create_index(df, value, categorical_vars, index_value="t0"):
     """
     Description:
     - Creates an indexed value from the earliest date in the data
@@ -437,25 +442,45 @@ def create_index(df, value, categorical_vars):
     - df: pandas dataframe
     - value: column that we want to index e.g. 'spend'
     - categorical_vars: the categorical variables that you want to group over
+    - index_value: if you want to set an index to a different time period than
+    the earliest then change this value to the time_period_value/date_time value
+    you want as the base for the index. Alternatively do not specify this value,
+    and it will default to using the earliest available value in the dataset.
+
 
     Returns:
     - df with t0 for specified categorical variables and indexed value
 
     """
-    try:
-        df_t0 = df[df["date_time"] == min(df["date_time"])]
-        print(f"{value} in {min(df['date_time'])} used as base for {value} index")
-    except Exception as e:
-        print(
-            f"\
-        No {e} column, using 'time_period_value' instead. Consider\
-        converting to date_time"
-        )
-        df = df.sort_values("time_period_value")
-        df_t0 = df[df["time_period_value"] == min(df["time_period_value"])]
-        print(
-            f"{value} in {min(df['time_period_value'])} used as base for {value} index"
-        )
+    if index_value == "t0":
+        try:
+            df_t0 = df[df["date_time"] == min(df["date_time"])]
+            print(f"{value} in {min(df['date_time'])} used as base for {value} index")
+        except Exception as e:
+            print(
+                f"\
+            No {e} column, using 'time_period_value' instead. Consider\
+            converting to date_time"
+            )
+            df = df.sort_values("time_period_value")
+            df_t0 = df[df["time_period_value"] == min(df["time_period_value"])]
+            print(
+                f"{value} in {min(df['time_period_value'])}\
+                used as base for {value} index"
+            )
+    else:
+        try:
+            df_t0 = df[df["date_time"] == index_value]
+            print(f"{value} in {index_value} used as base for {value} index")
+        except Exception as e:
+            print(
+                f"\
+            No {e} column, using 'time_period_value' instead. Consider\
+            converting to date_time"
+            )
+            df = df.sort_values("time_period_value")
+            df_t0 = df[df["time_period_value"] == index_value]
+            print(f"{value} in {index_value} used as base for {value} index")
 
     df_t0 = df_t0[categorical_vars + [value]]
     df_t0 = df_t0.rename(columns={f"{value}": f"{value}_t0"})
