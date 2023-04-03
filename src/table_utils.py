@@ -1,4 +1,4 @@
-from fintrans_toolbox.src.utils import bq_utils as bq
+from fintrans_toolbox.src import bq_utils as bq
 import pandas as pd
 import numpy as np
 
@@ -64,7 +64,7 @@ def read_spend_merchant_location(
         SQL_date = " "
 
     SQL1 = f"\
-        SELECT {SQL_date} * FROM\
+        SELECT {SQL_date} * , FROM\
         ons-fintrans-data-prod.fintrans_visa.spend_merchant_location\
         WHERE\
         time_period LIKE '{time_period}%' AND\
