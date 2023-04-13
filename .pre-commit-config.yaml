@@ -39,17 +39,17 @@ repos:
       - id: flake8
         name: flake8 - Python linting
         log_file: flake8_failures.log
-  - repo: https://github.com/nbQA-dev/nbQA
-    rev: 0.12.0
-    hooks:
-      - id: nbqa-isort
-        name: nbqa-isort - Sort Python imports (notebooks; auto-fixes)
-        args: [ --nbqa-mutate ]
-        additional_dependencies: [ isort==5.8.0 ]
-      - id: nbqa-black
-        name: nbqa-black - consistent Python code formatting (notebooks; auto-fixes)
-        args: [ --nbqa-mutate ]
-        additional_dependencies: [ black==22.3.0 ]
+#  - repo: https://github.com/nbQA-dev/nbQA
+#    rev: 0.12.0
+#    hooks:
+#      - id: nbqa-isort
+#        name: nbqa-isort - Sort Python imports (notebooks; auto-fixes)
+#        args: [ --nbqa-mutate ]
+#        additional_dependencies: [ isort==5.8.0 ]
+#      - id: nbqa-black
+#        name: nbqa-black - consistent Python code formatting (notebooks; auto-fixes)
+#        args: [ --nbqa-mutate ]
+#        additional_dependencies: [ black==22.3.0 ]
       # TODO: Disabled for now until it's clear how to add noqa to specific cells of a Jupyter notebook
       #- id: nbqa-flake8
       #  name: nbqa-flake8 - Python linting (notebooks)
@@ -61,3 +61,25 @@ repos:
         name: detect-secrets - Detect secrets in staged code
         args: [ "--baseline", ".secrets.baseline" ]
         exclude: .*/tests/.*|^\.cruft\.json$
+ # R specific hooks: https://github.com/lorenzwalthert/precommit
+  - repo: https://github.com/lorenzwalthert/precommit
+    rev: v0.1.3
+    hooks:
+      - id: style-files
+        name: Style files using styler
+        args: [ --style_pkg=styler, --style_fun=tidyverse_style ]
+      - id: roxygenize
+        name: Run roxygen2::roxygenize()
+      # codemeta must be above use-tidy-description when both are used
+      # -   id: codemeta-description-updated
+      - id: use-tidy-description
+        name: Run sethis::use_tidy_description()
+      - id: lintr
+        name: Run lintr::lint()
+        exclude: renv/activate.R
+      - id: readme-rmd-rendered
+        name: Check README.Rmd has been rendered to README.md
+      - id: parsable-R
+        name: Check for valid R code using the parse() function
+      - id: no-browser-statement
+        name: Check for accidential browser() statements
