@@ -1,8 +1,9 @@
-# `repo_cookiecutter`
+# fintrans_toolbox
 
-This is the suggested default template for ONS-fintrans repositries in following with best practice principles. This repositry provides users with a quick and consistent way to develop projects that reduce set-up, onboarding, and development time.
+This repository contains useful functions and tools that if utilised will make life easier, with a lot of functions that have default or allow customisable inputs. These are particularly useful for interacting with big query. Thesea are stored in the src folder.
 
-The key features are consistent directory structures, simple documentation and AQA planning, pre-commit hooks to promote best practice and reduce data risk, and GIT integration as standard. For full overview please see below and other relevant read_me files under each project section. This is developed from the gov-cookiecutter basic template.
+You will need to import the python modules into your notebook or script.
+
 
 ## Directory overview
 - Data folder and all contents are unrtacked by GIT
