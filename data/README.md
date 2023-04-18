@@ -1,12 +1,15 @@
 # `data` folder overview
 
 Any data that needs to be stored locally should be saved in this location. This folder,
-and its sub-folders, are not version-controlled.
+and its sub-folders, are not version-controlled. For example, we should store here temporary look up files created within
+GCP.
 
 Note: this is discouraged on GCP notebooks as any data will be lost upon re-image of the GCP notebooks and would need to be recreated.
 This potentially could be costly. Consider uploading to the GCP WIP bucket.
 
 The sub-folders should be used as follows:
+# This has since changed and these sub folders have been removed and we just have the data folder. Therefore to load them
+# as environment variables we can just use DIR_DATE
 
 - `external`: any data that will not be processed at all, such as reference data;
 - `raw`: any raw data before any processing;
@@ -23,8 +26,8 @@ import os
 
 # Load environment variables for the `data` folder, and its sub-folders
 DIR_DATA = os.getenv("DIR_DATA")
-DIR_DATA_EXTERNAL = os.getenv("DIR_DATA_EXTERNAL")
-DIR_DATA_RAW = os.getenv("DIR_DATA_RAW")
-DIR_DATA_INTERIM = os.getenv("DIR_DATA_INTERIM")
-DIR_DATA_PROCESSED = os.getenv("DIR_DATA_PROCESSED")
+#DIR_DATA_EXTERNAL = os.getenv("DIR_DATA_EXTERNAL")
+#DIR_DATA_RAW = os.getenv("DIR_DATA_RAW")
+#DIR_DATA_INTERIM = os.getenv("DIR_DATA_INTERIM")
+#DIR_DATA_PROCESSED = os.getenv("DIR_DATA_PROCESSED")
 ```

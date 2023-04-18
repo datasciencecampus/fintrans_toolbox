@@ -5,10 +5,12 @@ This repository contains useful functions and tools that if utilised will make l
 You will need to import the python modules into your notebook or script.
 
 
+
 ## Directory overview
 - Data folder and all contents are unrtacked by GIT
 - .gitignore default blocks popular data export file types due to data sensitivity
 - Documents folder contains AQA plan, assumptions, caveats, project planning
+- example_pipeline is from an older repo template and shows how to create a basic pipeline.
 - Notebooks stores notebooks
 - Outputs stores outputs
 - src for functions, modules, python scripts

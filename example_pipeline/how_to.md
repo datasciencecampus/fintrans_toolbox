@@ -2,9 +2,9 @@
 
 The entry point for the pipeline is stored within the package and called `run_pipeline.py`.
 To run the pipeline, run the following code in the terminal (whilst in the root directory of the
-project).
+project e.g. in this case fintrans_toolbox).
 
-```shell
+```shell / terminal
 python example_pipeline/run_pipeline.py
 ```
 
