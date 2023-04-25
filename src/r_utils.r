@@ -1,5 +1,6 @@
 library(bigrquery)
 library(dplyr)
+library(data.table)
 library(DBI)
 
 print("Establish a connection with Big Query via dbConnect
@@ -274,6 +275,119 @@ read_retail_performance <- function(
   print(paste0("The SQL statement you have just selected is: ", sql))
 
   df <- read_bq_table_sql(client, sql)
+
+  return(df)
+}
+
+
+lag_define <- function(x) {
+  # Description:
+  #- Translates yoy/yo2y/yo3y specification into units
+  # based on the quarterly data
+
+  # Args:
+  #- yoy: "yoy" or "yo2y" or "yo3y"
+  # e.g. x = lag('yoy'). To use it for monthly data, x = 3 * lag('yoy').
+  # Case insensitive.
+
+  # Returns:
+  #- number of units to shift data back to obtain lag
+  switch(x,
+    "yoy" = 4,
+    "YoY" = 4,
+    "yo2y" = 8,
+    "Yo2Y" = 8,
+    "yo3y" = 12,
+    "Yo3Y" = 12,
+    "MoM" = 1,
+    "mom" = 1,
+    "QoQ" = 1,
+    "qoq" = 1
+  )
+}
+
+
+get_cat_vars <- function(table) {
+  # Define a dictionary of categorical variables for each table
+  cat_vars <- list(
+    spoc = c(
+      "cardholder_origin",
+      "cardholder_origin_country",
+      "cardholder_location",
+      "mcg",
+      "mcc",
+      "merchant_channel"
+    ),
+    sml = c(
+      "merchant_location_level",
+      "merchant_location",
+      "cardholder_issuing_level",
+      "cardholder_issuing_country",
+      "mcg",
+      "mcc"
+    ),
+    rphst = c(
+      "cardholder_location_level",
+      "cardholder_location",
+      "merchant_location_level",
+      "merchant_location",
+      "mcg"
+    ),
+    spend_origin_and_channel = c(
+      "cardholder_origin",
+      "cardholder_origin_country",
+      "cardholder_location",
+      "mcg",
+      "mcc",
+      "merchant_channel"
+    ),
+    spend_merchant_location = c(
+      "merchant_location_level",
+      "merchant_location",
+      "cardholder_issuing_level",
+      "cardholder_issuing_country",
+      "mcg",
+      "mcc"
+    ),
+    retail_performance_high_streets_towns = c(
+      "cardholder_location_level",
+      "cardholder_location",
+      "merchant_location_level",
+      "merchant_location",
+      "mcg"
+    )
+  )
+
+  # Return the categorical variables of the specified table
+  return(cat_vars[[table]])
+}
+
+
+create_xox_growth <- function(df,
+                              time_period,
+                              yoy,
+                              categorical_vars,
+                              value = "spend") {
+  if (time_period == "Month" && !(yoy %in% c("MoM", "mom", "QoQ", "qoq"))) {
+    x <- 3 * lag_define(yoy)
+  } else {
+    x <- lag_define(yoy)
+  }
+
+  if ("date_time" %in% colnames(df)) {
+    df <- df[order(df$date_time), ]
+  } else {
+    print("no date_time column, sorting by time_period_value instead")
+    df <- df[order(df$time_period_value), ]
+  }
+
+  df <- as.data.table(df)
+  df <- df[, paste0(value, "_", yoy, "_lag") := shift(get(value), n = x),
+    by = categorical_vars
+  ]
+  df <- df[, paste0(value, "_", yoy) :=
+    (100 * (get(value) - get(paste0(value, "_", yoy, "_lag")))
+      / get(paste0(value, "_", yoy, "_lag")))]
 
   return(df)
 }
