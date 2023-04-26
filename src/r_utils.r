@@ -2,6 +2,9 @@ library(bigrquery)
 library(dplyr)
 library(data.table)
 library(DBI)
+library(magrittr)
+utils::globalVariables(".")
+globalVariables(c(":=", "!!", "..value"))
 
 print("Establish a connection with Big Query via dbConnect
 before using these functions")
@@ -389,5 +392,80 @@ create_xox_growth <- function(df,
     (100 * (get(value) - get(paste0(value, "_", yoy, "_lag")))
       / get(paste0(value, "_", yoy, "_lag")))]
 
+  return(df)
+}
+
+create_index <- function(df,
+                         value,
+                         categorical_vars,
+                         index_value = "t0") {
+  if (index_value == "t0") {
+    tryCatch(
+      {
+        df_t0 <- df[df$date_time == min(df$date_time), ]
+        print(paste0(
+          value, " in ", min(df$date_time),
+          " used as base for ", value, " index"
+        ))
+      },
+      error = function(e) {
+        print(paste0(
+          "No ", e,
+          " column, using 'time_period_value' instead.
+Consider converting to date_time"
+        ))
+        df <- df[order(df$time_period_value), ]
+        df_t0 <- df[df$time_period_value ==
+          min(df$time_period_value), ]
+        head(df_t0)
+        print(paste0(
+          value, " in ", min(df$time_period_value),
+          " used as base for ", value, " index"
+        ))
+      }
+    )
+  } else {
+    tryCatch(
+      {
+        df_t0 <- df[df$date_time == index_value, ]
+        print(paste0(
+          value, " in ", index_value,
+          " used as base for ", value, " index"
+        ))
+      },
+      error = function(e) {
+        print(paste0(
+          "No ", e,
+          " column, using 'time_period_value' instead.
+Consider converting to date_time"
+        ))
+        df <- df[order(df$time_period_value), ]
+        df_t0 <- df[df$time_period_value == index_value, ]
+        head(df_t0)
+        print(paste0(
+          value, " in ", index_value,
+          " used as base for ", value, " index"
+        ))
+      }
+    )
+  }
+
+
+
+  # get df of all cat vals and value "spend"
+  df_t0 <- df_t0[, c(categorical_vars, value), ]
+  setnames(df_t0, value, paste0(value, "_t0"))
+
+  df_t0 <- as.data.table(df_t0)
+  df <- as.data.table(df)
+
+
+  df <- merge(df, df_t0, by = categorical_vars, all = TRUE)
+
+  df[, paste0(value, "_index")] <- (100 * (df[, value, with = FALSE] /
+    df[, paste0(value, "_t0"), with = FALSE]))
+
+
+  print(head(df))
   return(df)
 }
