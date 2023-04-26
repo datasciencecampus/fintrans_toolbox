@@ -291,10 +291,12 @@ def create_date_time(df):
     df["month"] = np.where(
         df["time_period_value"].str[4:5] == "Q",
         3 * df["time_period_value"].str[5:6].astype(int),
-        df["time_period_value"].str[4:6].astype(int),
+        df["time_period_value"].str[4:6],
     )
 
-    df["date_time"] = pd.to_datetime(df["year"] * 100 + df["month"], format="%Y%m")
+    df["date_time"] = pd.to_datetime(
+        df["year"] * 100 + df["month"].astype(int), format="%Y%m"
+    )
 
     # move date time to the front
     first_col = df.pop("date_time")
