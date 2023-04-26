@@ -290,7 +290,7 @@ def create_date_time(df):
 
     df["month"] = np.where(
         df["time_period_value"].str[4:5] == "Q",
-        3 * df["time_period_value"].str[5:6].astype(int),
+        df["time_period_value"].str[5:6].astype(int) * 3,
         df["time_period_value"].str[4:6],
     )
 
