@@ -1,10 +1,13 @@
 library(bigrquery)
 library(dplyr)
+library(geosphere)
 library(data.table)
 library(DBI)
 library(magrittr)
 utils::globalVariables(".")
+globalVariables(c("postcode_sector", "postcode_district", "postcode_area"))
 globalVariables(c(":=", "!!", "..value"))
+globalVariables(names(data))
 
 print("Establish a connection with Big Query via dbConnect
 before using these functions")
@@ -468,4 +471,54 @@ Consider converting to date_time"
 
   print(head(df))
   return(df)
+}
+
+calculate_distance_from_point <- function(data, input, wanted) {
+  # becasue pre-commit hooks hates data.table (i want to cry)
+  postcode_sector <- postcode_district <- postcode_area <- NULL
+
+  # filtering for input postcode to get long/lat points
+  postcode_coord <- data[postcode_sector == input |
+    postcode_district == input | postcode_area == input, ]
+
+  if (input %in% postcode_coord$postcode_area) {
+    idx <- which(postcode_coord$postcode_area == input)[1]
+    lat <- postcode_coord$area_lat[idx]
+    long <- postcode_coord$area_long[idx]
+  } else if (input %in% postcode_coord$postcode_district) {
+    idx <- which(postcode_coord$postcode_district == input)[1]
+    lat <- postcode_coord$district_lat[idx]
+    long <- postcode_coord$district_long[idx]
+  } else if (input %in% postcode_coord$postcode_sector) {
+    idx <- which(postcode_coord$postcode_sector == input)[1]
+    lat <- postcode_coord$sector_lat[idx]
+    long <- postcode_coord$sector_long[idx]
+  } else {
+    print("Not found")
+    lat <- NA
+    long <- NA
+  }
+
+  # Once gotten long/lat points, creating distance between input desired
+  # point and all other points wanted
+  if (wanted == "sector") {
+    data <- data[, ":="(dist_sector = distHaversine(
+      c(long, lat),
+      cbind(data$sector_long, data$sector_lat)
+    ))]
+  } else if (wanted == "district") {
+    data <- data[, ":="(dist_district = distHaversine(
+      c(long, lat),
+      cbind(data$district_long, data$district_lat)
+    ))]
+  } else if (wanted == "area") {
+    data <- data[, ":="(dist_area = distHaversine(
+      c(long, lat),
+      cbind(data$area_long, data$area_lat)
+    ))]
+  } else {
+    print("please enter 'sector' , 'district' or 'area'")
+  }
+
+  return(data)
 }
