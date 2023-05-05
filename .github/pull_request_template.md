@@ -1,34 +1,54 @@
-# Summary
+##  Code review
 
-Add your summary here - keep it brief, to the point, and in plain English. [For further
-information about pull requests, check out the GDS
-Way](https://gds-way.cloudapps.digital/standards/pull-requests.html).
+All code needs to follow the planets CONTRIBUTING guidelines as set out in *CONTRIBUTING.md*
 
-# Checklists
+- [] **CONTRIBUTING guidelines**: Guidelines are followed and deviations are rare, necessary and explained. 
 
-<!--
-These are do-confirm checklists; it confirms that you have DOne each item.
+#### Documentation
 
-Outstanding actions should be completed before reviewers are assigned; if actions are
-irrelevant, please try and add a comment stating why.
+Any new code includes all the following forms of documentation:
 
-Incomplete pull/merge requests may be blocked until actions are resolved, or closed at
-the reviewers' discretion.
--->
+- [] **Function Documentation** 
+- [] **Script Documentation** Scripts are documented in line with the CONTRIBUTING guidelines
 
-This pull/merge request meets the following requirements:
+#### Functionality
 
-- [ ] code runs
-- [ ] [developments are ethical][data-ethics-framework] and secure
-- [ ] you have made proportionate checks that the code works correctly
-- [ ] test suite passes
-- [ ] developments adhere to AQA plan (see `docs/aqa/aqa_plan.md`)
+- [] **Document and build**: Check the file or notebook runs sequentially
+- [] **Packages** Check the required packages 
+- [] **Automated tests**: Unit tests cover essential functions for a reasonable range
+  of inputs and conditions. All tests pass on your local machine. Ideally for all functions
+  
+### AQA
+
+- [] ** Check ** give a brief overview of the QA process that has been followed
+- [] ** document ** document QA checks where relevant 
+- [ ] developments adhere to AQA plan (see `docs/aqa/aqa_plan.md`). QA plan updated if necessary 
 - [ ] data log updated (see `docs/aqa/data_log.md`), if necessary
 - [ ] assumptions, and caveats log updated (see `docs/aqa/assumptions_caveats.md`), if
   necessary
-- [ ] [minimum usable documentation][agilemodeling] written in the `docs` folder
 
-Comments have been added below around the incomplete checks.
+#### Final approval (post-review)
 
-[agilemodeling]: http://agilemodeling.com/essays/documentLate.htm
-[data-ethics-framework]: https://www.gov.uk/government/publications/data-ethics-framework
+The author has responded to my review and made changes to my satisfaction.
+- [] **I recommend merging this request.**
+
+---
+
+### Review comments
+
+*Insert detailed comments here!*
+
+These might include, but not exclusively:
+
+- bugs that need fixing (does it work as expected? and does it work with other code
+  that it is likely to interact with?)
+- alternative methods (could it be written more efficiently or with more clarity?)
+- documentation improvements (does the documentation reflect how the code actually works?)
+- additional tests that should be implemented (do the tests effectively assure that it
+  works correctly?)
+- code style improvements (could the code be written more clearly?)
+- QA checks that have failed or outputs that look suspicious
+- Is QA sufficient for the purpose of the code?
+
+Your suggestions should be tailored to the code that you are reviewing.
+Be critical and clear, but not mean. Ask questions and set actions.
