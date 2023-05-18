@@ -75,7 +75,7 @@ repos:
       - id: use-tidy-description
         name: Run sethis::use_tidy_description()
       - id: lintr
-        name: Run lintr::lint()
+        name: Run linter
         args: [--warn-only]
         verbose: true
         exclude: renv/activate.R
