@@ -74,11 +74,12 @@ repos:
       # -   id: codemeta-description-updated
       - id: use-tidy-description
         name: Run sethis::use_tidy_description()
-      - id: lintr
-        name: Run linter
-        args: [--warn-only]
-        verbose: true
-        exclude: renv/activate.R
+     # - id: lintr
+     #   name: Run linter
+     #   args: [--warn-only]
+     #   verbose: true
+     #   exclude: renv/activate.R
+     # TODO: Remover lintr hook until we can get the warn only option working
       - id: readme-rmd-rendered
         name: Check README.Rmd has been rendered to README.md
       - id: parsable-R
