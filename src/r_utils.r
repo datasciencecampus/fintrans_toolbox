@@ -465,8 +465,8 @@ Consider converting to date_time"
 
   df <- merge(df, df_t0, by = categorical_vars, all = TRUE)
 
-  df[, paste0(value, "_index")] <- (100 * (df[, value, with = FALSE] /
-    df[, paste0(value, "_t0"), with = FALSE]))
+  df[, paste0(value, "_index")] <- (100 * (df[, ..value] /
+    df[, paste0(..value, "_t0")]))
 
 
   print(head(df))
