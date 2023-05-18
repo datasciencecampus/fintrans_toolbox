@@ -77,6 +77,7 @@ repos:
       - id: lintr
         name: Run lintr::lint()
         args: [--warn-only,--key=value]
+        verbose: true
         exclude: renv/activate.R
       - id: readme-rmd-rendered
         name: Check README.Rmd has been rendered to README.md
