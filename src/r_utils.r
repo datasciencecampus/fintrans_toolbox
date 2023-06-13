@@ -29,6 +29,8 @@ read_full_bq_table <- function(con, table_id) {
   #'    e.g "ons-fintrans-analysis-prod.fin_wip_notebook.harry_test"
   #' Returns:
   #'    the query results in a Pandas dataframe , or None if error
+  #' Example:
+  #' read_full_bq_table(con,ons-fintrans-analysis-prod.fin_wip_notebook.harry_test)
 
 
   sql <- paste0("SELECT * FROM ", table_id)
@@ -46,6 +48,9 @@ read_bq_table_sql <- function(con, sql) {
   #'    e.g "ons-fintrans-analysis-prod.fin_wip_notebook.harry_test"
   #' Returns:
   #'    the query results in a Pandas dataframe , or None if error
+  #' Example:
+  #' SQL <- "SELECT * FROM ..."
+  #' read_bq_table_sql(con,sql)
 
   print(sql)
   try(df <- dbGetQuery(con, sql))
@@ -53,6 +58,33 @@ read_bq_table_sql <- function(con, sql) {
 }
 
 read_spend_merchant_location <- function(
+    #
+    #   Description:
+    #   Function allows you to read in data from the spend merchant location table\
+    #   with default values set to 'All' where possible.
+    #   so if you wanted to keep the defaults you would run:\
+    #   read_spend_merchant_location(client). However, if you wanted to change
+    #   one or more of the categorical variables you would run\
+    #   read_spend_merchant_location(client, merchant_location_level = 'POSTAL_SECTOR').\
+    #   If you want a value to cover anything then define it as an empty string e.g.\
+    #   mcg = ''
+    #
+    #   Args:
+    #  - client: defined earlier in the session
+    #  - time_period: 'Month' or 'Quarter'. Defaults to 'All'
+    #  - merchant_location_level: string. Defaults to 'All'
+    #  - cardholder_issuing_level: string. Defaults to 'All'
+    #  - mcg: string. Defaults to 'All'
+    #  - mcc: string. Defaults to 'All'
+    #  - merchant_location: string. defaults to '' so that all
+    #  merchant locations are picked up
+    #  - cardholder_issuing_country: string. defaults to '' so that all cardholder
+    #  issuing countries are picked up.
+    #
+    #  Returns:
+    #    Spend Merchant Location with specification of your choice
+    # Example
+    # read_spend_merchant_location(con, time_period = "Month", merchant_location_level = "All", cardholder_issuing_level = "All", mcg = "All", mcc = "All, #"merchant_location = "PO", cardholder_issuing_country = "")
     con,
     time_period = "Quarter",
     merchant_location_level = "All",
@@ -298,6 +330,8 @@ lag_define <- function(x) {
 
   # Returns:
   #- number of units to shift data back to obtain lag
+  # example
+  # lag_define("yoy")
   switch(x,
     "yoy" = 4,
     "YoY" = 4,
@@ -315,6 +349,8 @@ lag_define <- function(x) {
 
 get_cat_vars <- function(table) {
   # Define a dictionary of categorical variables for each table
+  # Example
+  # get_cat_vars("spoc")
   cat_vars <- list(
     spoc = c(
       "cardholder_origin",
@@ -369,11 +405,35 @@ get_cat_vars <- function(table) {
 }
 
 
-create_xox_growth <- function(df,
-                              time_period,
-                              yoy,
-                              categorical_vars,
-                              value = "spend") {
+create_xox_growth <- function(
+    #
+    #    Description:
+    #    - creates yoy/yo2y/yo3y/MoM/QoQ growth column
+    #    Args:
+    #    - df: Pandas dataframe
+    #    - time_period: 'Month' or 'Quarter'
+    #    - yoy: "yoy" or "yo2y" or "yo3y" or "MoM" or "QoQ"
+    #    e.g. x = lag('yoy'). To use it for monthly data, lag = 3 * lag('yoy'). It has
+    #    been designed to be case insensitive.
+    #    - categorical_vars: list of the categorical variables in the dataset. E.g.
+    #    if working with all of spend_merchant_location then categorical_vars =
+    #    ['merchant_location_level','merchant_location','cardholder_issuing_level',
+    #    'cardholder_issuing_country','mcg','mcc']. You can reduce this or change this
+    #    if you do not have them in your dataframe.
+    #- table: name/abbreviation of table e.g. 'sml'. Used as input into
+    # function ## no longer used
+    # to retrieve the categorical variables for a groupby. ## no longer used
+    #    - value: str of variable you want to calculate growth of. Defaults to 'spend'.
+    #
+    #    Returns:
+    #    - df with lagged yoy column and yoy growth column
+    #
+    #    Example: df = create_XoX_growth(df, 'Month', 'MoM',get_car_vars('sml'), 'spend')
+    df,
+    time_period,
+    yoy,
+    categorical_vars,
+    value = "spend") {
   if (time_period == "Month" && !(yoy %in% c("MoM", "mom", "QoQ", "qoq"))) {
     x <- 3 * lag_define(yoy)
   } else {
