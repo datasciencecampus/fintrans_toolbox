@@ -255,7 +255,6 @@ read_retail_performance_high_streets_towns\
          cardholder_location = " 'SW2' " or\
          cardholder_location =" 'SW2', 'SE4' " for multiple)
     - mcg: string. Defaults to 'All'.
-    - mcc: string. Defaults to 'All'.
 
     If a specific cardholder_location or\
     merchant_location is defined,
