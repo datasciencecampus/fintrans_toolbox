@@ -200,8 +200,8 @@ Spend Merchant Location with specification of your choice
     over this variable:\
     df = df.groupby\
     (['time_period', 'time_period_value', 'cardholder_origin',\
-    'cardholder_origin_country', 'mcg', 'mcc', 'merchant_channe']).\
-    sum(['spend, 'transactions', 'cardholders'])\
+    'cardholder_origin_country', 'mcg', 'mcc', 'merchant_channel']).\
+    sum(['spend', 'transactions', 'cardholders'])\
     .reset_index()\
     "
     )
