@@ -4,6 +4,54 @@ This repository contains useful functions and tools that if utilised will make l
 
 You will need to import the python modules into your notebook or script.
 
+## Set-up
+The set up instructions are important to ensure that you do not push data to the repository.
+
+Git should only be used for code and not data, so code files including R files, R markdown files, python files and notebooks should be pushed. However, we need to ensure no data or graphs are included within commits. \
+There are 2 ways in which data and charts can be commited to Git:
+- Seperate files, for example .txt, .csv, .png etc.
+- Within scripts, for example Notebooks etc.
+
+### Git Ignore
+Separate file management is done using a git ignore file in the repository. The git ignore file tells git to skip anything with certain file extensions. \
+This repository has been created using the 'cookie cutter repo template', this means that a git ignore file already exists. \
+**You should check the git ignore file contains all the types of data file in your project** \
+If you require more file extensions to be ignored, these can be added within .gitignore
+
+### Pre-commit hooks
+Notebooks are a type of code file that allows you to view outputs, they contain information about these outputs. This information needs to be cleared before it is pushed to GitHub, this is done through Pre-commit hooks. \
+This repository has been created using the 'cookie cutter repo template', therefore the pre-commit hooks are already setup, however they need to be "switched on". \
+When this isn’t done, it will allow you to push notebooks to GitHub without clearing out the outputs. 
+To "switch on" the pre commit hooks, you need to make the requirements. 
+
+#### Make requirements
+The following instructions should be followed to ensure pre-commit hooks are set up correctly:
+These instructions need to be followed for every repository.
+
+1) Clone the repository.
+
+2) Install the Python requirements by:
+   - Opening the terminal
+   - Type the following into the terminal to navigate to the correct directory:
+```shell
+ cd subnational_team
+```
+   - Once in the correct directory type the following:
+
+```shell
+pip install -r requirements.txt
+```
+
+3) **IMPORTANT** Auto-setup pre-commit hooks and other features for development, open your terminal and enter:
+
+```shell
+make requirements
+```
+
+4) Check pre commit hooks run when you push a commit. If you do not see a list of checks in the terminal, there may be a problem.
+
+5) If you are unsure, create a notebook, create a graph using dummy data, run the notebook, push the changes to the repo. When you open GitHub in a browser you should only be able to see the code you created. If you can see the graph the setup is not correct.
+
 
 
 ## Directory overview
@@ -34,35 +82,6 @@ located.
 - Python 3.6.1+ installed
 - a `.secrets` file (if needed to manage credentials) with the needed secrets and credentials
 - load environment variables from `.env`
-
-## Set-up
-
-1) Create or clone a repositry using this template.
-
-2) Install the Python requirements, open your terminal and enter:
-
-```shell
-pip install -r requirements.txt
-```
-
-3) Auto-setup pre-commit hooks and other features for development, open your terminal and enter:
-
-```shell
-make requirements
-```
-
-4) (Optional) Set-up .secrets and make template adjustments if required such as .gitignore, additional pre-commit hooks, additional directories.
-
-5) Basic set-up complete. Once project documentation is complete you can create a site view of your documentaion by opening your terminal and entering:
-
-```shell
-make docs
-```
-  For code coverage open your terminal and run:
-
-```shell
-make coverage_html
-```
 
 ## Loading environment variables
 
