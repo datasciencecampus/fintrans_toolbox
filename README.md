@@ -34,7 +34,7 @@ These instructions need to be followed for every repository.
    - Opening the terminal
    - Type the following into the terminal to navigate to the correct directory:
 ```shell
- cd subnational_team
+ cd repo_name
 ```
    - Once in the correct directory type the following:
 
