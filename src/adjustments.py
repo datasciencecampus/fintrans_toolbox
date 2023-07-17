@@ -325,10 +325,10 @@ def get_adj_all(time_period="", cardholder_origin="", merchant_channel=""):
         `ons-fintrans-data-prod.fintrans_visa.spend_origin_and_channel`
         WHERE (cardholder_origin = 'UNITED KINGDOM' and
         merchant_channel = 'All' and
-#       destination_country = 'UNITED KINGDOM' and
+        destination_country = 'UNITED KINGDOM' and
         cardholder_location = 'All' and mcg = 'All')
-#        or (cardholder_origin = 'International Cardholder'  and mcg = 'All')
-#        or (cardholder_origin = 'All'  and mcg = 'All')
+        or (cardholder_origin = 'International Cardholder'  and mcg = 'All')
+        or (cardholder_origin = 'All'  and mcg = 'All')
         """
     client = bigquery.Client()
     df_adj = bq.read_bq_table_sql(client, sql)
