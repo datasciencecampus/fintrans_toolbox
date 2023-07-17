@@ -327,8 +327,9 @@ def get_adj_all(time_period="", cardholder_origin="", merchant_channel=""):
         merchant_channel = 'All' and
         destination_country = 'UNITED KINGDOM' and
         cardholder_location = 'All' and mcg = 'All')
-        or (cardholder_origin = 'International Cardholder'  and mcg = 'All')
-        or (cardholder_origin = 'All'  and mcg = 'All')
+        or (cardholder_origin = 'International Cardholder' and
+        mcg = 'All' and merchant_channel = 'All')
+        or (cardholder_origin = 'All'  and mcg = 'All' and merchant_channel = 'All')
         """
     client = bigquery.Client()
     df_adj = bq.read_bq_table_sql(client, sql)
@@ -402,8 +403,11 @@ def adjusted_all_rphst(df, time_period):
        - the dataframe with adjusted spend/transactions if that variable exists
     """
     print("RPHST adjusted by number of cardholders in time period")
+
+    df["merged_country"] = "UNITED KINGDOM"
+
     df_adj = get_adj_all(time_period)
-    merge_on = ["time_period"]
+    merge_on = ["time_period", "merged_country"]
     # link on datetime first
     df1 = try_to_merge(merge_on, df, df_adj)
 
@@ -489,6 +493,7 @@ def adjusted_all_sml(
     print("Spend merchant location values are adjusted to 01-2019 cardholder numbers.")
     print("Based in numbers of cardholder with the same cardholder origin country")
 
+    df["merged_country"] = df["cardholder_issuing_country"]
     df_adj = get_adj_all(time_period)
 
     # TODO: If you specify cardholder_issuing_level you may
@@ -504,7 +509,7 @@ def adjusted_all_sml(
     else:
         pass
 
-    cols = ["time_period", "cardholder_issuing_country", "cardholder_issuing_level"]
+    cols = ["time_period", "merged_country"]
     merge_on = list(set(cols) & set(df_adj.columns))
     # link on datetime, cardholder origin, issuing country and merchant channel first
 
