@@ -229,8 +229,8 @@ def boundary_file_download(client, postal_level, output_location):
     ons-fintrans-data-prod-fintrans-reference-des-ingress bucket
 
     Args:
-       postal_level (str): either sector or district depending on the
-       level you wish to be available locally
+       postal_level (str): either 'postcode_sector' or 'postcode_district'
+       depending on the level you wish to be available locally
        output_location (str): where you would like to boundary files to be saved
     Returns:
        The boundary files saved locally
