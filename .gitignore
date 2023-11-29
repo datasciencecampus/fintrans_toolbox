@@ -18,6 +18,12 @@
 *.docx
 *.xlsm
 *.ppt
+*.cpg
+*.dbf
+*.prj
+*.qmd
+*.shp
+*.shx
 
 ### custom - R configuaration ###
 .Rproj.user
