@@ -221,3 +221,31 @@ def estimate_costs(sql):
             query_job.total_bytes_processed, cost_dollars
         )
     )
+
+
+def boundary_file_download(client, postal_level, output_location):
+    """
+    Gets boundary files from
+    ons-fintrans-data-prod-fintrans-reference-des-ingress bucket
+
+    Args:
+       postal_level (str): either 'postcode_sector' or 'postcode_district'
+       depending on the level you wish to be available locally
+       output_location (str): where you would like to boundary files to be saved
+    Returns:
+       The boundary files saved locally
+    """
+
+    # All files needed
+    list_of_files = [".cpg", ".dbf", ".prj", ".qmd", ".shp", ".shx"]
+
+    bucket = client.get_bucket("ons-fintrans-data-prod-fintrans-reference-des-ingress")
+
+    for i in list(list_of_files):
+        output_file = output_location + postal_level + i
+        bucket_path = (
+            "ons-des-prod-fintrans-reference-ingress/fintrans_reference/geodata/"
+        )
+        bucket_path = bucket_path + postal_level + "/" + postal_level + i
+        blob = bucket.blob(bucket_path)
+        blob.download_to_filename(output_file)
