@@ -1,0 +1,17 @@
+name: pre-commit
+
+on:
+  push:
+    branches:
+      - '**'  # This will match all branches
+  pull_request:
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - run: pip install pre-commit
+      - run: pre-commit run --all-files
