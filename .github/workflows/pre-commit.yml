@@ -13,7 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
-      - run: pip install pre-commit
       - uses: pre-commit/action@v3.0.1
         with:
           extra_args: nbstripout --all-files
